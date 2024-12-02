@@ -1,0 +1,4 @@
+paramiko==2.12.0
+requests
+pyyaml
+ansible

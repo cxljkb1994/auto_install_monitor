@@ -1,0 +1,82 @@
+---
+# 部署基础目录
+deployment_base_dir: /app/monitor_deployment
+
+# Prometheus部署模式配置
+prometheus_deployment:
+  cluster_mode: 0  # 0: 单机模式, 1: 集群模式
+
+# 包含服务器登录凭据的配置文件路径
+server_secrets_file: server_secrets.yml
+
+# 目标服务器列表
+target_servers:
+  prometheus_servers:
+    master:
+      - ip: 172.16.0.184
+        ssh_user: root
+        role: master
+    # 仅在cluster_mode=1时使用slave配置 
+    slave:
+      - ip: 172.16.0.185
+        ssh_user: root
+        role: slave
+  
+  node_exporter_servers:
+    - ip: 172.16.0.184
+      ssh_user: root
+
+  grafana_servers:
+    - ip: 172.16.0.184
+      ssh_user: root
+
+# 文件传输配置
+file_transfer:
+  source_server:
+    ip: 172.16.0.184
+    ssh_user: root
+  remote_path: /app/installation_packages
+
+# Prometheus配置
+prometheus_config:
+  global:
+    scrape_interval: 15s
+  scrape_configs:
+    - job_name: node_exporter
+      static_configs:
+        - targets:
+          - 172.16.0.184:9100
+
+# Grafana配置
+grafana_config:
+  paths:
+    data: /var/lib/grafana
+    logs: /var/log/grafana
+    plugins: /var/lib/grafana/plugins
+  server:
+    http_port: 3000
+  security:
+    admin_user: admin
+    admin_password: grafana_admin_password
+  database:
+    type: sqlite3
+  log:
+    mode: console,file
+    level: info
+
+# 离线安装包配置
+packages:
+  prometheus: installation_packages/prometheus-2.30.3.linux-amd64.tar.gz
+  node_exporter: installation_packages/node_exporter-1.2.2.linux-amd64.tar.gz
+  grafana: installation_packages/grafana-enterprise-11.3.1.linux-amd64.tar.gz
+
+# HTTP代理配置
+http_proxy:
+  host: "127.0.0.1"  # 代理服务器地址,为空则不使用代理
+  port: "10809"  # 代理服务器端口
+  verify_ssl: false  # 是否验证SSL证书    
+# 远程下载地址配置
+remote_packages:
+  prometheus: https://github.com/prometheus/prometheus/releases/download/v3.0.1/prometheus-3.0.1.linux-amd64.tar.gz
+  node_exporter: https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
+  grafana: https://dl.grafana.com/enterprise/release/grafana-enterprise-11.3.1.linux-amd64.tar.gz
